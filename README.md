@@ -37,7 +37,7 @@ the schematic
 
 in converted in the below shown symbol
 
-<img src="./fig/sch.png" width="sym">
+<img src="./fig/sym.png" width="640">
 
 ## License
 
