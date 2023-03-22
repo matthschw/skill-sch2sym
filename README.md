@@ -33,11 +33,11 @@ By executing the command
 ```
 the schematic
 
-<img src="./figs/sch.png" width="640">
+<img src="./fig/sch.png" width="640">
 
 in converted in the below shown symbol
 
-<img src="./figs/sch.png" width="sym">
+<img src="./fig/sch.png" width="sym">
 
 ## License
 
