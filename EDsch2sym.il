@@ -74,8 +74,8 @@
 
   (let 
     (
-      shapes tabPinPos delta pos dir halfheight halfwidth
-      pinlabel pinpos sympin sympinMaster labelpos
+      shapes tabPinPosDelta delta pos dir halfheight halfwidth
+      pinlabel pinpos sympin sympinMaster labelpos cdsTerm tabPinPos
     )
 
     (when
@@ -92,7 +92,8 @@
         );or
       );and
 
-      (setq tabPinPos (makeTable "tabPinPos" 0.0))
+      (setq tabPinPos (makeTable "tabPinPos" nil))
+      (setq tabPinPosDelta (makeTable "tabPinPosDelta" 0.0))
 
       (setq
         shapes
@@ -302,7 +303,7 @@
               );if
             );setq
 
-            (setarray tabPinPos dir 0.025)
+            (setarray tabPinPosDelta dir 0.025)
 
             (setq
               pinpos
@@ -400,7 +401,9 @@
               );schCreateSymbolLabel
             );setq
 
+           
             (schGlueLabel pinlabel sympin)
+            (setarray tabPinPos fig (list pinpos sympin dir))
 
           );foreach 
         );foreach
@@ -412,16 +415,56 @@
         (list "instance" "drawing")
         (list
           (list
-            (plus (leftEdge sym~>bBox) (arrayref tabPinPos "left"))
-            (plus (bottomEdge sym~>bBox) (arrayref tabPinPos "bottom"))    
+            (plus (leftEdge sym~>bBox) (arrayref tabPinPosDelta "left"))
+            (plus (bottomEdge sym~>bBox) (arrayref tabPinPosDelta "bottom"))    
           );list
           (list
-            (difference (rightEdge sym~>bBox) (arrayref tabPinPos "right"))
-            (difference (topEdge sym~>bBox) (arrayref tabPinPos "top"))    
+            (difference (rightEdge sym~>bBox) (arrayref tabPinPosDelta "right"))
+            (difference (topEdge sym~>bBox) (arrayref tabPinPosDelta "top"))    
           );list        
         );list
       );dbCreateRect
 
+      (foreach terminal sch~>terminals
+
+        (foreach pin terminal~>pins
+
+          (foreach fig pin~>figs
+
+            (setq pinpos (car (arrayref tabPinPos fig)))
+            (setq sympin (cadr (arrayref tabPinPos fig)))
+            (setq dir (caddr (arrayref tabPinPos fig)))
+
+            (setq
+              cdsTerm
+              (schCreateSymbolLabel
+                sym
+                pinpos 
+                "analog pin annotate"
+                (lsprintf "cdsTerm(\"%s\")" terminal~>name)
+                (case dir
+                  ("top" "upperLeft")
+                  ("bottom" "lowerRight")
+                  ("left" "upperRight")            
+                  (t "upperLeft")
+                );case
+                (case dir
+                  ("top" "R90")
+                  ("bottom" "R90")
+                  ("left" "R0")
+                  (t "R0")
+                );case
+                "stick"
+                fontHeight
+                "normalLabel"
+              );schCreateSymbolLabel
+            );setq
+
+             (schGlueLabel cdsTerm sympin)
+
+          );foreach 
+        );foreach
+      );foreach
       t
     );when
   );let
