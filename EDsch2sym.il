@@ -69,12 +69,13 @@
       (bottomMargin 0.0)
       (stubLength 0.25)
       (fontHeight 0.0625)
+      (labelOffset 0.025)
   )
 
   (let 
     (
       shapes tabPinPos delta pos dir halfheight halfwidth
-      pinlabel pinpos sympin sympinMaster
+      pinlabel pinpos sympin sympinMaster labelpos
     )
 
     (when
@@ -324,6 +325,40 @@
               );if
             );setq
 
+            (setq
+              labelpos
+              (if (greaterp stubLength 0)
+                (case dir
+                  ("top" 
+                    (list
+                      (plus (xCoord pos) labelOffset)
+                      (plus (yCoord pos) (times 0.5 stubLength))
+                    );list
+                  )
+                  ("bottom"
+                    (list
+                      (plus (xCoord pos)  labelOffset)
+                      (difference (yCoord pos) (times 0.5 stubLength))
+                    );list
+                  )
+                  ("left" 
+                    (list
+                      (difference (xCoord pos) (times 0.5 stubLength))
+                      (plus (yCoord pos) labelOffset)
+                    );list
+                  )             
+                  (t
+                    (list
+                      (plus (xCoord pos) (times 0.5 stubLength))
+                      (plus (yCoord pos) labelOffset)
+                    );list
+                  )
+                );case
+                pos
+              );if
+            );setq
+
+
             (unless (equal pos pinpos)
               (dbCreateLine sym (list "device" "drawing") (list pos pinpos))
             );unless
@@ -344,16 +379,21 @@
               pinlabel
               (schCreateSymbolLabel
                 sym
-                pos 
+                labelpos 
                 "pin name"
                 terminal~>name
                 (case dir
-                  ("top" "upperLeft")
-                  ("bottom" "lowerRight")
-                  ("left" "lowerLeft")            
-                  (t "upperRight")
+                  ("top" "upperCenter")
+                  ("bottom" "upperCenter")
+                  ("left" "lowerCenter")            
+                  (t "lowerCenter")
                 );case
-                "R0"
+                (case dir
+                  ("top" "R90")
+                  ("bottom" "R0")
+                  ("left" "R0")            
+                  (t "R90")
+                );case
                 "stick"
                 fontHeight
                 "normalLabel"
