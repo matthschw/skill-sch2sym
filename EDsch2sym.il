@@ -469,3 +469,362 @@
     );when
   );let
 );defun EDsch2sym
+
+;INTERNAL FUNCTION
+; _EDsch2SymOptionsCB
+;
+;Description:
+; This callback is triggered when the Options Disclusre Button is pushed 
+; on the form
+;
+(defun _EDsch2SymOptionsCB ()
+  (let (form)
+
+    (setq form (eval (quote EDsch2SymForm)))
+
+    (unless form->discButton->value
+      (hiSetFormSize form (list (car (hiGetFormSize form)) 201))
+    );unless
+  );let
+);defun _EDsch2SymOptionsCB
+
+;INTERNAL FUNCTION
+; _EDsch2SymCB
+;
+;Description:
+; This callback is triggered 'OK' or 'Apply' is psuhed on the form
+;
+(defun _EDsch2SymCB ()
+  (let (form sch sym)
+    (setq form (eval (quote EDsch2SymForm)))
+
+    (if 
+      (muffleWarnings
+        (ddGetObj
+          form->libSchematicCombo->value
+          form->cellSchematicCombo->value
+          form->viewSchematicCombo->value
+          "sch.oa"
+        );ddGetObj
+      );muffleWarnings
+    then
+      (setq
+        sch
+        (dbOpenCellViewByType
+          form->libSchematicCombo->value
+          form->cellSchematicCombo->value
+          form->viewSchematicCombo->value
+          "schematic"
+          "r"
+        );dbOpenCellViewByType
+      );setq
+
+      (if
+        (muffleWarnings
+          (ddGetObj
+            form->libSymbolCombo->value
+          );ddGetObj
+        );muffleWarnings
+      then
+
+        (setq
+          sym
+          (dbOpenCellViewByType
+            form->libSymbolCombo->value
+            form->cellSymbolCombo->value
+            form->viewSymbolCombo->value
+            "schematicSymbol"
+            "w"
+          );dbOpenCellViewByType
+        );setq
+
+        (EDsch2sym
+          sch
+          sym
+          ?scale         form->scalingFloatField->value
+          ?leftMargin    form->leftMarginFloatField->value
+          ?rightMargin   form->rightMarginFloatField->value
+          ?topMargin     form->topMarginFloatField->value
+          ?bottomMargin  form->bottomMarginFloatField->value
+          ?stubLength    form->stubLengthFloatField->value
+          ?fontHeight    form->fontHeightFloatField->value
+          ?labelOffset   form->labelOffsetFloatField->value               
+        );EDsch2sym
+
+        (dbSave sym)
+        (dbClose sym)
+      else
+        (error 
+          "\"%s\" is not a library" 
+          form->libSymbolCombo->value  
+        );error
+      );if
+
+      (dbClose sch)
+
+    else
+      (error 
+        "\"%s/%s/%s\" is not a schematic cellview" 
+        form->libSchematicCombo->value
+        form->cellSchematicCombo->value    
+        form->viewSchematicCombo->value    
+      );error
+    );if
+  );let
+);defun _EDsch2SymCB
+
+(let 
+  (
+    libSchematicCombo cellSchematicCombo viewSchematicCombo schematicFormLayout
+    libSymbolCombo cellSymbolCombo viewSymbolCombo symbolFormLayout
+    bottomMarginFloatField fontHeightFloatField labelOffsetFloatField 
+    leftMarginFloatField rightMarginFloatField stubLengthFloatField
+    topMarginFloatField optionsFormLayout discButton
+    horizontalBoxLayout scalingFloatField verticalBoxLayout form
+  )
+ 
+  (setq
+    libSchematicCombo
+    (ddHiCreateLibraryComboField
+      ?name (quote libSchematicCombo) 
+      ?prompt "Library Name"
+      ?callback "(ddsUpdateSyncWithForm)"
+    );ddHiCreateLibraryComboField
+  );setq
+
+  (setq
+    cellSchematicCombo
+    (ddHiCreateCellComboField
+      ?name (quote cellSchematicCombo) 
+      ?prompt "Cell Name"
+      ?callback "(ddsUpdateSyncWithForm)"
+    );ddHiCreateCellComboField
+  );setq
+
+  (setq
+    viewSchematicCombo
+    (ddHiCreateViewComboField
+      ?name (quote viewSchematicCombo)
+      ?prompt "View Name"
+      ?callback "(ddsUpdateSyncWithForm)"
+    );ddHiCreateViewComboField
+  );setq
+
+  (setq
+    schematicFormLayout
+    (hiCreateFormLayout
+      (quote schematicFormLayout)
+      ?frame "Schematic"
+      ?items
+        (list
+          libSchematicCombo
+          cellSchematicCombo
+          viewSchematicCombo
+        );list
+    );hiCreateFormLayout
+  );setq
+
+  (setq
+    libSymbolCombo
+    (ddHiCreateLibraryComboField
+      ?name (quote libSymbolCombo) 
+      ?prompt "Library Name"
+      ?callback "(ddsUpdateSyncWithForm)"
+    );ddHiCreateLibraryComboField
+  );setq
+
+  (setq
+    cellSymbolCombo
+    (ddHiCreateCellComboField
+      ?name (quote cellSymbolCombo) 
+      ?prompt "Cell Name"
+      ?callback "(ddsUpdateSyncWithForm)"
+    );ddHiCreateCellComboField
+  );setq
+
+  (setq
+    viewSymbolCombo
+    (ddHiCreateViewComboField
+      ?name (quote viewSymbolCombo) 
+      ?prompt "View Name"
+      ?callback "(ddsUpdateSyncWithForm)"
+    );ddHiCreateViewComboField
+  );setq
+
+  (setq
+    symbolFormLayout
+    (hiCreateFormLayout
+      (quote symbolFormLayout)
+      ?frame "Symbol"
+      ?items
+        (list
+          libSymbolCombo
+          cellSymbolCombo
+          viewSymbolCombo
+        );list
+    );hiCreateFormLayout
+  );setq
+
+  (setq
+    horizontalBoxLayout
+    (hiCreateHorizontalBoxLayout
+      (quote horizontalBoxLayout)
+      ?items (list schematicFormLayout symbolFormLayout)
+    );hiCreateHorizontalBoxLayout
+  );setq
+
+  (setq
+    scalingFloatField
+    (hiCreateFloatField
+      ?name (quote scalingFloatField)
+      ?value 1.0
+      ?prompt "Scaling"
+      ?range (list 0.05 nil)
+    );hiCreateFloatField
+  );setq
+
+  (setq
+    leftMarginFloatField
+    (hiCreateFloatField
+      ?name (quote leftMarginFloatField)
+      ?value 0.0
+      ?prompt "Left Margin"
+      ?range (list 0.0 nil)
+    );hiCreateFloatField
+  );setq
+
+  (setq
+    rightMarginFloatField
+    (hiCreateFloatField
+      ?name (quote rightMarginFloatField)
+      ?value 0.0
+      ?prompt "Right Margin"
+      ?range (list 0.0 nil)
+    );hiCreateFloatField
+  );setq
+
+  (setq
+    topMarginFloatField
+    (hiCreateFloatField
+      ?name (quote topMarginFloatField)
+      ?value 0.0
+      ?prompt "Top Margin"
+      ?range (list 0.0 nil)
+    );hiCreateFloatField
+  );setq
+
+  (setq
+    bottomMarginFloatField
+    (hiCreateFloatField
+      ?name (quote bottomMarginFloatField)
+      ?value 0.0
+      ?prompt "Bottom Margin"
+      ?range (list 0.0 nil)
+    );hiCreateFloatField
+  );setq
+
+  (setq
+    stubLengthFloatField
+    (hiCreateFloatField
+      ?name (quote stubLengthFloatField)
+      ?value 0.25
+      ?prompt "Stub Length"
+      ?range (list 0.0 nil)
+    );hiCreateFloatField
+  );setq
+
+  (setq
+    fontHeightFloatField
+    (hiCreateFloatField
+      ?name (quote fontHeightFloatField)
+      ?value 0.0625
+      ?prompt "Font Height"
+      ?range (list 0.0 nil)
+    );hiCreateFloatField
+  );setq
+
+  (setq
+    labelOffsetFloatField
+    (hiCreateFloatField
+      ?name (quote labelOffsetFloatField)
+      ?value 0.025
+      ?prompt "Label Offset"
+      ?range (list 0.0 nil)
+    );hiCreateFloatField
+  );setq
+
+  (setq
+    optionsFormLayout
+    (hiCreateFormLayout
+      (quote optionsFormLayout)
+      ?frame "Options"
+      ?items
+        (list
+          scalingFloatField
+          leftMarginFloatField
+          rightMarginFloatField
+          topMarginFloatField
+          bottomMarginFloatField
+          stubLengthFloatField
+          fontHeightFloatField
+          labelOffsetFloatField
+        );list
+      ?invisible t
+    );hiCreateVerticalBoxLayout
+  );setq
+
+  (setq 
+    discButton
+    (hiCreateDisclosureButton
+      ?name 'discButton
+      ?onFields '(optionsFormLayout)
+      ?callback "(_EDsch2SymOptionsCB)"
+    );hiCreateDisclosureButton
+  );setq
+
+  (setq
+    verticalBoxLayout
+    (hiCreateVerticalBoxLayout
+      (quote verticalBoxLayout)
+      ?items 
+        (list
+          horizontalBoxLayout
+          discButton
+          optionsFormLayout
+        );list
+    );hiCreateVerticalBoxLayout
+  );setq
+
+  (setq
+    form
+    (hiCreateLayoutForm
+      (quote EDsch2SymForm)
+      "[ED] Schematic To Symbol"
+      verticalBoxLayout
+      ?sizePolicy (quote horizontalExpanding)
+      ?dialogStyle (quote modeless)
+      ?buttonLayout (quote OKCancelApply)
+      ?minSize 600:100
+      ?callback
+        (list
+          "(_EDsch2SymCB)"
+          "nil"
+        );list
+      ?buttonDisabled (list (quote Help))
+    );hiCreateLayoutForm
+  );setq
+
+  (hiInstantiateForm form)
+
+  (ddHiLinkFields
+    form->libSchematicCombo  
+    form->cellSchematicCombo
+    form->viewSchematicCombo
+  );ddHiLinkFields
+
+  (ddHiLinkFields
+    form->libSymbolCombo  
+    form->cellSymbolCombo
+    form->viewSymbolCombo
+  );ddHiLinkFields
+);let

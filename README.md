@@ -18,6 +18,8 @@ A more convenient way might be to add this load command in the `.cdsinit`.
 The Skill command `EDsch2sym` is used to convert the schematic in the 
 symbol.
 Have a look in *EDsch2sym.il*  for the parameters of the function.
+As an alternative, you can invoke a GUI with  
+`(hiDisplayForm (quote EDsch2SymForm))`.
 
 ## Example
 
