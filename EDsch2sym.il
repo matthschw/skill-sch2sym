@@ -12,6 +12,9 @@
 *   Globals  :
 *    - Functions :
 *       o EDsch2sym
+*       o _EDsch2SymCB
+*       o _EDsch2SymOptionsCB
+*
 *    - Symbols   : none
 *
 *   Copyright 2023 Reutlingen University, Electronics & Drives (Germany)
@@ -41,18 +44,18 @@
 ; EDsch2sym
 ;
 ;Description:
-; Converts a schematic to a symbol
+; Converts a Schematic to a Symbol
 ;
 ;Parameters
 ; sch               dbobj,  cellview of schematic
 ; sym               dbobj,  cellview of symbol
-; scale             num, scaling
-; leftMargin        num, left margin
-; rightMargin       num, right margin
-; topMargin         num, top margin
-; bottomMargin      num, bottom margin
-; stubLength        num, length of wire stubs at pins
-; fontHeight        num, font height
+; ?scale            num, scaling
+; ?leftMargin       num, left margin
+; ?rightMargin      num, right margin
+; ?topMargin        num, top margin
+; ?bottomMargin     num, bottom margin
+; ?stubLength       num, length of wire stubs at pins
+; ?fontHeight       num, font height
 ;
 ;Returns:
 ; t/nil    't' when successful, 'nil' otherwise
@@ -470,11 +473,12 @@
   );let
 );defun EDsch2sym
 
+
 ;INTERNAL FUNCTION
 ; _EDsch2SymOptionsCB
 ;
 ;Description:
-; This callback is triggered when the Options Disclusre Button is pushed 
+; This callback is triggered when the Options Disclosure Button is pushed 
 ; on the form
 ;
 (defun _EDsch2SymOptionsCB ()
@@ -488,11 +492,12 @@
   );let
 );defun _EDsch2SymOptionsCB
 
+
 ;INTERNAL FUNCTION
 ; _EDsch2SymCB
 ;
 ;Description:
-; This callback is triggered 'OK' or 'Apply' is psuhed on the form
+; This callback is triggered 'OK' or 'Apply' is pushed on the form
 ;
 (defun _EDsch2SymCB ()
   (let (form sch sym)
